@@ -17,7 +17,7 @@ jobs:
     env:
       AWS_REGION: ap-southeast-1
       ACCOUNT_ID: 309322535290                
-      ECR_REPOSITORY: ecs-flask         
+      ECR_REPOSITORY: demo/ecs-flask         
       IMAGE_TAG: ${{ github.sha }}
 
     steps:
