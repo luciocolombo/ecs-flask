@@ -1,0 +1,65 @@
+name: Build and push Docker image to ECR
+
+on:
+  push:
+    branches: [ "master" ]
+    tags: [ "v*" ]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+  packages: read
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ap-southeast-1
+      ACCOUNT_ID: 309322535290                
+      ECR_REPOSITORY: ecs-flask         
+      IMAGE_TAG: ${{ github.sha }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ env.ACCOUNT_ID }}:role/push-docker-img-to-repo-ecr-flask
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Ensure ECR repository exists
+        shell: bash
+        run: aws ecr describe-repositories --repository-names "$ECR_REPOSITORY"
+
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build image
+        run: |
+          docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
+
+      - name: Tag image with ECR URI
+        run: |
+          ECR_URI="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}"
+          docker tag "$ECR_REPOSITORY:$IMAGE_TAG" "$ECR_URI:$IMAGE_TAG"
+          echo "ECR_URI=$ECR_URI" >> $GITHUB_ENV
+
+      - name: Push image tag
+        run: |
+          docker push "$ECR_URI:$IMAGE_TAG"
+
+      - name: Also push latest on master
+        if: github.ref == 'refs/heads/master'
+        run: |
+          docker tag "$ECR_REPOSITORY:$IMAGE_TAG" "$ECR_URI:latest"
+          docker push "$ECR_URI:latest"
+
+      - name: Output image URI
+        run: |
+          echo "Pushed: $ECR_URI:$IMAGE_TAG"
+          if [ "${{ github.ref }}" = "refs/heads/master" ]; then
+            echo "Pushed: $ECR_URI:latest"
+          fi
