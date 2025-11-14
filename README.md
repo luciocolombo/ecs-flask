@@ -76,7 +76,7 @@ Required secrets or variables in the GitHub repository
 Placeholder for screenshot that shows all green GitHub checks
 
 ```markdown
-![GitHub Actions checks](docs/images/github_actions_checks_green.png)
+![GitHub Actions checks](public/cicd-succeded.png)
 ```
 
 ## ECR integration
@@ -90,7 +90,7 @@ Images pushed from GitHub Actions appear in the ECR repository with the usual UR
 Placeholder for screenshot of the ECR console with the uploaded image
 
 ```markdown
-![ECR image uploaded](docs/images/ecr_image_uploaded.png)
+![ECR image uploaded](public/ecr.png)
 ```
 
 ## ECR lifecycle policy for cost control
@@ -101,7 +101,7 @@ For this project the repository is configured to retain only the most recent ima
 Placeholder for screenshot of the lifecycle policy
 
 ```markdown
-![ECR lifecycle policy](docs/images/ecr_lifecycle_one_image.png)
+![ECR lifecycle policy](public/ecr-lifecycle.png)
 ```
 
 ## ECS Fargate deployment  WIP
