@@ -73,11 +73,9 @@ Required secrets or variables in the GitHub repository
 3. ECR repository name
 4. IAM role to assume through OIDC
 
-Placeholder for screenshot that shows all green GitHub checks
 
-```markdown
 ![GitHub Actions checks](public/cicd-succeded.png)
-```
+
 
 ## ECR integration
 
@@ -87,22 +85,19 @@ Images pushed from GitHub Actions appear in the ECR repository with the usual UR
 <aws_account_id>.dkr.ecr.<region>.amazonaws.com/<repo>:<tag>
 ```
 
-Placeholder for screenshot of the ECR console with the uploaded image
 
-```markdown
+
 ![ECR image uploaded](public/ecr.png)
-```
+
 
 ## ECR lifecycle policy for cost control
 
 ECR lifecycle policies can delete older images automatically.
 For this project the repository is configured to retain only the most recent image in order to minimize storage usage.
 
-Placeholder for screenshot of the lifecycle policy
 
-```markdown
 ![ECR lifecycle policy](public/ecr-lifecycle.png)
-```
+
 
 ## ECS Fargate deployment  WIP
 

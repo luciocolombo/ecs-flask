@@ -1,0 +1,1 @@
+Eliminate the .disabled extension in the _ci.yml make the CICD active in github actions and push to AWS ECR
