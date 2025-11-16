@@ -1,123 +1,167 @@
-# Flask Codebase CI/CD and ECR Integration
 
-This project sets up a delivery pipeline for a Flask codebase.
-It currently uses a placeholder application while the container and registry workflow is being built.
-The focus is on moving from source control to Amazon ECR, with ECS Fargate and related pieces added later WIP.
+# Flask on ECS Fargate  
+CI, ECR Integration, Networking, and Cost-Optimized Deployment  
+IaC: WIP
 
-## Objectives
+This project shows how a Flask application is containerized, pushed to Amazon ECR, and deployed on ECS Fargate using a cost-efficient, controlled setup suitable for development and demo environments.
 
-1. Build and containerize a Flask codebase
-2. Automate image builds and ECR pushes with GitHub Actions
-3. Use ECR lifecycle policies to control storage cost
-4. Add ECS Fargate, load balancing, logging and operations later  WIP
+Note: GitHub Actions builds and pushes an image to AWS ECR on every commit (CI/CD).  
+I disabled this to avoid unnecessary pushes.  
+To reactivate it, remove the `.deactivated` suffix from `github/workflows/ci.yml.deactivated`.
 
-## Pipeline overview
+---
 
-Current scope
+## Goals
 
-1. Flask code served with Gunicorn
-2. Docker image built locally and in CI
-3. GitHub Actions workflow that validates the codebase and pushes images to ECR
-4. ECR repository storing the latest container version with lifecycle cleanup
+1 Build and publish Docker images to ECR  
+2 Deploy the Flask app on ECS Fargate  
+3 Reduce AWS costs while iterating  
+4 Prepare for full IaC (Terraform WIP)
 
-Planned work
+---
 
-1. ECS Fargate service and task definition  WIP
-2. Networking, security groups and load balancer  WIP
-3. CloudWatch logs, metrics and alarms  WIP
+## Cost-Optimization Decisions
 
-## Local development
+• **Desired tasks initially set to zero**  
+  Fargate billing starts when a task is RUNNING  
 
-Install dependencies
+• **No Application Load Balancer**  
+  ALB has a constant hourly cost  
 
-```bash
+• **ECR lifecycle policy keeps only the latest image**  
+  Avoids unused storage  
+
+• **Public subnet + Internet Gateway (no NAT Gateway)**  
+  NAT has fixed hourly cost, public subnet does not  
+
+• **Security Group restricted to my IP only**  
+  Minimizes exposure without needing an ALB  
+
+---
+
+## Architecture Overview
+
+### VPC, Subnet, Routing  
+Custom VPC  
+Public subnet routed through IGW  
+No NAT Gateway  
+Restricted SG  
+
+![VPC](public/vpc.jpg)  
+*Figure: Dedicated VPC used for ECS deployment*
+
+![Public Subnet](public/public-subnet.jpg)  
+*Figure: Public subnet associated to the route table*
+
+![Route Table + IGW](public/vpc-igw+routes.jpg)  
+*Figure: Route table providing 0.0.0.0/0 access through IGW*
+
+---
+
+## Local Development
+
+Install dependencies  
+```
+
 pip install -r app/requirements.txt
+
 ```
 
-Run the application locally
+Run locally  
+```
 
-```bash
 python app/server.py
+
 ```
 
-Build the container
+Build container  
+```
 
-```bash
 docker build -t flask_app:latest .
+
 ```
 
-Run the container
-
-```bash
-docker run -p 8080:5000 flask_app:latest
+Run container  
 ```
 
-## GitHub Actions CI and ECR push
+docker run -p 8080:8080 flask_app:latest
 
-The repository uses GitHub Actions to automate testing, building and publishing images.
-
-Workflow logic
-
-1. On every push or pull request
-   run checks, linting or tests
-2. On push to the main branch
-   authenticate to AWS through OIDC
-   build the Docker image
-   tag it with the commit SHA and with latest
-   push it to the configured ECR repository
-
-Required secrets or variables in the GitHub repository
-
-1. AWS account id
-2. AWS region
-3. ECR repository name
-4. IAM role to assume through OIDC
-
-
-![GitHub Actions checks](public/cicd-succeded.png)
-
-
-## ECR integration
-
-Images pushed from GitHub Actions appear in the ECR repository with the usual URI format
-
-```text
-<aws_account_id>.dkr.ecr.<region>.amazonaws.com/<repo>:<tag>
 ```
 
+---
 
+## GitHub Actions CI → ECR
 
-![ECR image uploaded](public/ecr.png)
+CI builds the image and pushes it to ECR using OIDC authentication.  
+Lifecycle policy ensures storage stays minimal.
 
+![ECR Lifecycle](public/ecr-lifecycle.png)  
+*Figure: ECR policy retaining only the latest image*
 
-## ECR lifecycle policy for cost control
+![ECR Upload](public/ecr.png)  
+*Figure: Docker image successfully pushed to ECR*
 
-ECR lifecycle policies can delete older images automatically.
-For this project the repository is configured to retain only the most recent image in order to minimize storage usage.
+---
 
+## ECS Fargate Deployment
 
-![ECR lifecycle policy](public/ecr-lifecycle.png)
+Public Fargate service with assigned public IP.  
+Ingress allowed only from my IP.  
+CloudWatch collects all container logs.
 
+![Security Group](public/sg.jpg)  
+*Figure: Inbound 8080 restricted to my IP*
 
-## ECS Fargate deployment  WIP
+![Cluster with 0 Tasks](public/cluster+service+0tasks.jpg)  
+*Figure: Desired count at zero to avoid Fargate billing*
 
-Planned content
+![Running Fargate Task](public/running-fargate.jpg)  
+*Figure: Task running successfully in the public subnet*
 
-1. Task definition based on the pushed image
-2. Fargate service configuration
-3. Networking, security groups and load balancer
-4. Environment variables and secrets handling
-5. Automatic rollouts
+![CloudWatch Logs](public/cloudwatch.jpg)  
+*Figure: Gunicorn logs streamed to CloudWatch*
 
-## Monitoring and observability  WIP
+![App Response](public/server-running-aws.jpg)  
+*Figure: Flask app responding through the Fargate public IP*
 
-Planned content
+---
 
-1. CloudWatch log groups
-2. Metrics, dashboards and alarms
+## CloudFormation (Cluster View)
 
-## Future enhancements  WIP
+AWS displays the ECS cluster and its lifecycle events through a generated CloudFormation view.  
+This confirms the ECS cluster is active and operating correctly.
 
-1. Infrastructure as code for IAM, ECR and ECS
-2. Multi environment pipeline configuration
-3. Deployment strategies such as blue green or rolling updates
+![CloudFormation](public/cluster-cloudformation.jpg)  
+*Figure: CloudFormation view showing the ECS cluster running successfully*
+
+---
+
+## Current Status
+
+✔ CI to ECR operational  
+✔ Fargate service running with public IP  
+✔ VPC and routing validated  
+✔ CloudWatch log ingestion active  
+✔ Security hardened with IP-restricted SG  
+
+---
+
+## IaC (Terraform) – WIP
+
+Terraform modules will manage:  
+• VPC  
+• Subnets and routing  
+• Security groups  
+• ECR  
+• ECS cluster, task definition, and service  
+
+---
+
+## Next Steps
+
+1 Add Terraform modules  
+2 Add env vars and secrets  
+3 Add ALB once autoscaling is required  
+4 Implement rolling or blue/green deployments  
+5 Add alarms and dashboards  
+
