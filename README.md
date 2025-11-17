@@ -103,7 +103,7 @@ Lifecycle policy ensures storage stays minimal.
 
 ---
 
-## ECS Fargate Deployment
+## ECS Fargate Deployment.
 
 Public Fargate service with assigned public IP.  
 Ingress allowed only from my IP.  
