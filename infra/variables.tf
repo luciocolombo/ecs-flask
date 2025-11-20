@@ -5,7 +5,13 @@ variable "region" {
 }
 
 variable "project_name" {
-    type = string
-    description = "project name"
-    default = "ecs-flask"
+  type        = string
+  description = "project name"
+  default     = "ecs-flask"
+}
+
+
+variable "container_port" {
+  type    = number
+  default = 8080
 }
