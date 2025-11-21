@@ -95,11 +95,11 @@ docker run -p 8080:8080 flask_app:latest
 
 ---
 
-# Path B — Terraform IaC Deployment (New)
+# Path B — Terraform IaC Deployment
 
-The new `infra/` directory contains Terraform configuration that builds a **clean, reproducible AWS environment**.
+The `infra/` directory contains a full Terraform configuration that builds a **clean, reproducible AWS environment** from scratch.
 
-Current IaC resources created:
+This IaC setup provisions:
 
 - VPC  
 - Two public subnets  
@@ -108,9 +108,14 @@ Current IaC resources created:
 - Security Group  
 - ECR repository  
 - ECS Cluster  
-- Terraform outputs for ECR URL and cluster name  
+- Task Definition  
+- IAM Execution Role  
+- ALB (Application Load Balancer)  
+- Target Group + Listener  
+- ECS Service (desired_count = 0 to avoid Fargate costs)  
+- Outputs (ECR URL and ECS Cluster name)
 
-These correspond exactly to the resources shown in `terraform plan` and `terraform apply`.
+These components appear in the **Terraform plan**, forming a complete, production-style ECS deployment pipeline — even if no image has been pushed yet.
 
 ---
 
@@ -122,15 +127,32 @@ These correspond exactly to the resources shown in `terraform plan` and `terrafo
 
 **terraform apply**
 
-![Terraform Apply](public/terraform-apply-min.jpg)
+![Terraform Apply](/public/terraform-apply-min.jpg)
 
 **ECR created via Terraform**
 
-![ECR from Terraform](public/terraform-ecr.jpg)
+![ECR from Terraform](/public/terraform-ecr.jpg)
 
 ---
 
 ## Terraform Plan Output
+
+Full raw plan stored in:
+
+🔗 **[plan_output.txt](/infra/plan_output.txt)**
+
+This includes all resources Terraform would create:
+- VPC  
+- Subnets  
+- IGW  
+- Route tables  
+- SG  
+- ECS cluster + ECS Service
+- ECR repository  
+- ALB + TG + Listener  
+- Task Definition  
+- Outputs  
+
 
 Full raw output stored in:
 
@@ -159,8 +181,8 @@ Contains all resources Terraform created:
 ✔ Base infrastructure created  
 ✔ Reproducible and clean setup  
 ✔ ECR + ECS cluster fully automated  
-⬜ Task Definition (next step)  
-⬜ ECS Service (next step)  
-⬜ ALB (optional)  
+✔ Task Definition  
+✔ ECS Service 
+✔ ALB
 
 
