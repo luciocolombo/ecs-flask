@@ -166,7 +166,7 @@ This includes all resources Terraform would create:
 ✔ Reproducible and clean setup  
 ✔ ECR + ECS cluster fully automated  
 ✔ Task Definition  
-✔ ECS Service 
+✔ ECS Service  
 ✔ ALB
 
 
