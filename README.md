@@ -10,7 +10,7 @@ This repository demonstrates **two independent deployment paths**:
 # Overview of Both Deployment Paths
 
 ### Path A — Manual Deployment (Historic Setup)
-Your original, fully manual workflow:
+Original, fully manual workflow:
 - Docker image built locally or by GitHub Actions
 - Pushed to ECR manually or via CI
 - ECS Cluster and Service created manually in the AWS console
@@ -30,12 +30,11 @@ A clean, fully reproducible infrastructure built from scratch using Terraform:
 - ECS cluster
 
 Terraform creates the base infrastructure.  
-Task Definition + ECS Service will be added in the next phase once the image is in the Terraform-managed ECR.
 
 Both paths coexist because they serve distinct purposes:
-- Manual path = your original implementation  
-- IaC path = your professional, reproducible version  
-- They live in **different branches**
+- Manual path = Original implementation  
+- IaC path = Professional, reproducible version  
+
 
 ---
 
@@ -44,10 +43,10 @@ Both paths coexist because they serve distinct purposes:
 ## Cost-Optimization Decisions
 
 • Desired tasks initially set to zero  
-• No ALB  
+• No ALB in manual implementation (In Terraform plan it is present, but it won't be deployed until needed)  
 • ECR lifecycle keeps the latest image only  
 • Public subnet + IGW (no NAT Gateway)  
-• Security Group restricted to my IP  
+• Security Group restricted to my IP (only in manual deploy version)
 
 ---
 
@@ -151,21 +150,6 @@ This includes all resources Terraform would create:
 - ECR repository  
 - ALB + TG + Listener  
 - Task Definition  
-- Outputs  
-
-
-Full raw output stored in:
-
-🔗 **[plan_output.txt](/infra/plan_output.txt)**  
-
-Contains all resources Terraform created:
-- VPC  
-- Subnets  
-- IGW  
-- Route tables  
-- SG  
-- ECS cluster  
-- ECR repository  
 - Outputs  
 
 ---
